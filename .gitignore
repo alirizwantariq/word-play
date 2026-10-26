@@ -1,0 +1,15 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# editors
+.vscode/
+.idea/
+*.swp
+
+# node (none used, just in case)
+node_modules/
+
+# generated scratch
+tools/preview-*.png

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#150F33">
+  <title>Word Play</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- animated background -->
+  <div class="bg">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+  </div>
+
+  <div id="app">
+
+    <!-- ============ HOME (game hub) ============ -->
+    <section id="screen-home" class="screen">
+      <button id="btn-settings" class="icon-btn" aria-label="Settings">
+        <svg viewBox="0 0 24 24" width="26" height="26">
+          <path fill="currentColor" d="M19.4 13a7.5 7.5 0 0 0 .1-1 7.5 7.5 0 0 0-.1-1l2.1-1.7a.5.5 0 0 0 .1-.6l-2-3.5a.5.5 0 0 0-.6-.2l-2.5 1a7.7 7.7 0 0 0-1.7-1L14.4 2a.5.5 0 0 0-.5-.4h-4a.5.5 0 0 0-.5.4L9 4.1a7.7 7.7 0 0 0-1.7 1l-2.5-1a.5.5 0 0 0-.6.2l-2 3.5a.5.5 0 0 0 .1.6L4.5 11a7.5 7.5 0 0 0 0 2l-2.2 1.7a.5.5 0 0 0-.1.6l2 3.5c.1.2.4.3.6.2l2.5-1c.5.4 1.1.7 1.7 1l.4 2.1c0 .2.3.4.5.4h4c.2 0 .5-.2.5-.4l.4-2.1c.6-.3 1.2-.6 1.7-1l2.5 1c.2.1.5 0 .6-.2l2-3.5a.5.5 0 0 0-.1-.6L19.4 13zM12 15.5A3.5 3.5 0 1 1 15.5 12 3.5 3.5 0 0 1 12 15.5z"/>
+        </svg>
+      </button>
+
+      <div class="logo">
+        <div class="logo-words">
+          <span class="logo-tile">WORD</span>
+          <span class="logo-tile t2">PLAY</span>
+        </div>
+        <div class="logo-bolt"></div>
+      </div>
+
+      <!-- word of the day -->
+      <div class="wotd">
+        <div class="wotd-label">✨ WORD OF THE DAY</div>
+        <div class="wotd-word" id="wotd-word">…</div>
+        <div class="wotd-fact" id="wotd-fact">…</div>
+      </div>
+
+      <div class="home-stats">
+        <span id="home-stars" class="stat-chip">★ 0</span>
+        <span id="home-coins" class="stat-chip coins"></span>
+        <button id="btn-ad" class="stat-chip ad-chip" title="Watch a short ad for 100 coins">▶ +100</button>
+      </div>
+
+      <div class="home-btns">
+        <button id="btn-continue" class="btn primary big">▶  CHAIN REACTION</button>
+        <button id="btn-duel" class="btn secondary">
+          <span class="game-ico">👥</span> WORD DUEL <span class="btn-sub">2–4 players · guess the word</span>
+        </button>
+        <button id="btn-hunt" class="btn secondary">
+          <span class="game-ico">🔎</span> WORD HUNT <span class="btn-sub">find hidden words · 90s</span>
+        </button>
+        <div class="home-mini">
+          <button id="btn-levels" class="btn ghost">☰ PACKS</button>
+          <button id="btn-endless" class="btn ghost">∞ ENDLESS</button>
+        </div>
+      </div>
+
+      <div class="home-footer">3 quick word games · works offline</div>
+    </section>
+
+    <!-- ============ PACK SELECT ============ -->
+    <section id="screen-packs" class="screen">
+      <header class="bar">
+        <button id="back-packs" class="icon-btn">←</button>
+        <div class="bar-title">Chain Reaction — Packs</div>
+        <div id="packs-stars" class="stat-chip">★ 0</div>
+      </header>
+      <div id="packs-grid" class="packs-grid"></div>
+    </section>
+
+    <!-- ============ LEVEL SELECT ============ -->
+    <section id="screen-levels" class="screen">
+      <header class="bar">
+        <button id="back-levels" class="icon-btn">←</button>
+        <div id="levels-title" class="bar-title"></div>
+        <div id="levels-stars" class="stat-chip">★ 0</div>
+      </header>
+      <div id="levels-grid" class="levels-grid"></div>
+    </section>
+
+    <!-- ============ CHAIN REACTION GAME ============ -->
+    <section id="screen-game" class="screen">
+      <header class="bar">
+        <button id="back-game" class="icon-btn">←</button>
+        <div id="game-label" class="bar-title small"></div>
+        <div class="bar-right">
+          <span id="game-score" class="stat-chip score">0</span>
+        </div>
+      </header>
+
+      <div class="game-status">
+        <div id="game-hearts" class="hearts"></div>
+        <span id="game-coins" class="stat-chip coins"></span>
+      </div>
+
+      <div id="chain-strip" class="chain-strip"></div>
+
+      <div id="game-prompt" class="prompt"></div>
+
+      <div id="tile-grid" class="tile-grid"></div>
+
+      <div class="game-bottom">
+        <button id="btn-hint" class="btn hint">
+          <span class="bulb"></span> HINT · <span id="hint-cost">25</span>
+        </button>
+        <span id="combo-pill" class="combo"></span>
+      </div>
+    </section>
+
+    <!-- ============ WORD DUEL: Guess the Word ============ -->
+    <section id="duel-setup" class="screen">
+      <header class="bar">
+        <button id="duel-back1" class="icon-btn">←</button>
+        <div class="bar-title">Word Duel</div>
+        <div class="bar-title small">pass &amp; play</div>
+      </header>
+      <div class="duel-body">
+        <div class="duel-h" style="text-align:center">How many players?</div>
+        <div id="duel-player-count" class="pill-row"></div>
+        <div id="duel-setup-info" class="ov-text small" style="margin-top:14px"></div>
+        <button id="duel-start" class="btn primary big" style="margin-top:16px">START DUEL ▶</button>
+        <button id="duel-invite" class="btn secondary">👥 INVITE FRIENDS</button>
+      </div>
+    </section>
+
+    <section id="duel-write" class="screen">
+      <header class="bar">
+        <button id="duel-back2" class="icon-btn">←</button>
+        <div id="duel-write-head" class="bar-title small"></div>
+        <div id="duel-word-count" class="stat-chip"></div>
+      </header>
+      <div class="duel-body">
+        <div class="ov-text small" style="text-align:center">
+          Pick a <b>category</b> — guessers will see it as their clue!
+        </div>
+        <div id="duel-cats" class="cat-row"></div>
+        <div class="duel-input-row">
+          <input id="duel-input" type="text" maxlength="8" autocomplete="off"
+                 autocapitalize="characters" autocorrect="off" spellcheck="false"
+                 placeholder="YOUR SECRET WORD…">
+        </div>
+        <div id="duel-sugg-label" class="ov-text small" style="display:none">Suggestions ▾</div>
+        <div id="duel-suggestions" class="sugg-row"></div>
+        <button id="duel-write-done" class="btn primary big" style="margin-top:auto">
+          LOCK IN WORD ▶
+        </button>
+      </div>
+    </section>
+
+    <section id="duel-pass" class="screen">
+      <div class="duel-body center">
+        <div class="pass-ico">📱➡️</div>
+        <div id="duel-pass-text" class="duel-h"></div>
+        <button id="duel-pass-btn" class="btn primary big">I'M READY ▶</button>
+      </div>
+    </section>
+
+    <section id="duel-guess" class="screen">
+      <header class="bar">
+        <button id="duel-back3" class="icon-btn">←</button>
+        <div id="duel-guess-head" class="bar-title small"></div>
+      </header>
+      <div class="duel-body">
+        <div id="duel-hearts" class="hearts big-hearts"></div>
+        <div id="duel-blanks" class="blanks"></div>
+        <div id="duel-turn-label" class="duel-h small" style="text-align:center"></div>
+        <div id="duel-callout" class="callout"></div>
+        <div id="duel-keyboard" class="key-row"></div>
+      </div>
+    </section>
+
+    <section id="duel-results" class="screen">
+      <div class="duel-body center">
+        <div id="duel-results-title" class="duel-h big"></div>
+        <div id="duel-results-list" style="width:100%"></div>
+        <button id="duel-again" class="btn primary big">↻ PLAY AGAIN</button>
+        <button id="duel-home" class="btn ghost">HOME</button>
+      </div>
+    </section>
+
+    <!-- ============ WORD HUNT ============ -->
+    <section id="screen-hunt" class="screen">
+      <header class="bar">
+        <button id="hunt-back" class="icon-btn">←</button>
+        <div class="bar-title">Word Hunt <span id="hunt-mode" style="font-size:12px"></span></div>
+        <div class="bar-right">
+          <span id="hunt-timer" class="stat-chip score">90s</span>
+        </div>
+      </header>
+      <div class="game-status">
+        <div class="ov-text small" style="flex:1">Swipe across hidden words →</div>
+        <button id="btn-hunt-hint" class="btn hint" style="padding:9px 14px;font-size:13px">
+          <span class="bulb"></span> 25
+        </button>
+        <span id="hunt-score" class="stat-chip coins" style="color:#fff">0</span>
+      </div>
+      <div id="hunt-grid" class="hunt-grid"></div>
+      <div id="hunt-cancelbar" class="cancelbar"></div>
+      <div id="hunt-words" class="hunt-words"></div>
+    </section>
+
+    <!-- overlays + toast live outside screens -->
+    <div id="overlay"></div>
+    <div id="toast"></div>
+  </div>
+
+  <script src="js/levels.js"></script>
+  <script src="js/dictionary.js"></script>
+  <script src="js/wordoftheday.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/wordduel.js"></script>
+  <script src="js/wordhunt.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

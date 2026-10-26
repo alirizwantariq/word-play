@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1024px; height: 500px; overflow: hidden; }
+  body {
+    font-family: -apple-system, Roboto, "Segoe UI", Arial, sans-serif;
+    background: linear-gradient(120deg, #241650 0%, #150F33 55%, #35145e 100%);
+    color: #fff;
+    position: relative;
+  }
+  .blob { position: absolute; border-radius: 50%; filter: blur(60px); opacity: .5; }
+  .b1 { width: 340px; height: 340px; background: #FF8A3D; top: -120px; left: -100px; }
+  .b2 { width: 300px; height: 300px; background: #B479FF; bottom: -130px; right: -80px; }
+  .wrap { position: relative; z-index: 2; display: flex; height: 100%; align-items: center; padding: 0 64px; gap: 48px; }
+  .art { flex: none; transform: scale(1.05); }
+  .text { flex: 1; }
+  h1 { font-size: 96px; font-weight: 900; letter-spacing: 1px; line-height: .95; }
+  h1 .grad {
+    background: linear-gradient(135deg, #FF8A3D, #FF5E78);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .tag { font-size: 30px; font-weight: 700; color: #FFD447; margin-top: 16px; letter-spacing: 1px; }
+  .badges { margin-top: 24px; display: flex; gap: 14px; }
+  .badge {
+    background: rgba(255,255,255,.12);
+    border: 1.5px solid rgba(255,255,255,.35);
+    border-radius: 999px;
+    padding: 10px 22px;
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: .5px;
+  }
+</style>
+</head>
+<body>
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="wrap">
+
+    <!-- chain links + bolt, same art as the app icon -->
+    <svg class="art" width="360" height="360" viewBox="0 0 360 360">
+      <defs>
+        <linearGradient id="boltg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#FFE38A"/>
+          <stop offset="1" stop-color="#FFD447"/>
+        </linearGradient>
+      </defs>
+      <g transform="rotate(30 130 195)">
+        <rect x="30" y="125" width="200" height="140" rx="70" fill="none" stroke="#fff" stroke-width="24"/>
+      </g>
+      <g transform="rotate(-30 230 165)">
+        <rect x="130" y="95" width="200" height="140" rx="70" fill="none" stroke="#fff" stroke-width="24"/>
+      </g>
+      <polygon points="195,80 155,175 180,175 162,282 216,182 190,182"
+               fill="url(#boltg)" stroke="#fff" stroke-width="7" stroke-linejoin="round"/>
+    </svg>
+
+    <div class="text">
+      <h1><span class="grad">WORD PLAY</span></h1>
+      <div class="tag">3 quick word games in your pocket!</div>
+      <div class="badges">
+        <span class="badge">80 LEVELS</span>
+        <span class="badge">2–4 PLAYERS</span>
+        <span class="badge">WORKS OFFLINE</span>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
