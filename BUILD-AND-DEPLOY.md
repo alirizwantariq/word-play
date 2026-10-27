@@ -123,17 +123,23 @@ JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home" \
 
 ---
 
-## 5. Host the privacy policy (free, 5 minutes)
+## 5. ✅ Privacy policy — already hosted!
 
-Play requires a public URL for the privacy policy. Free option via GitHub Pages:
+The repo's GitHub Pages is enabled, so your privacy policy is live at:
 
-1. Create a GitHub repo (e.g. `chain-reaction-words-site`).
-2. Upload `store-listing/privacy-policy.html`.
-3. In the repo: **Settings → Pages** → Branch `main`, folder `/ (root)` → Save.
-4. Your policy URL becomes:
-   `https://<your-username>.github.io/chain-reaction-words-site/privacy-policy.html`
-5. ⚠️ First replace `your-email@example.com` inside the file with your real email.
-6. Paste that URL into the Play Console privacy policy field.
+```
+https://alirizwantariq.github.io/word-play/store-listing/privacy-policy.html
+```
+
+Use that URL in the Play Console privacy policy field.
+
+> ⚠️ One step left: replace `your-email@example.com` inside
+> `store-listing/privacy-policy.html` with your real support email,
+> then commit + push — GitHub Pages updates automatically.
+
+Bonus: the game itself is playable online at
+`https://alirizwantariq.github.io/word-play/game/index.html` — great for
+sharing with testers before the Play Store launch.
 
 ---
 

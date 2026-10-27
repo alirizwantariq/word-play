@@ -22,6 +22,9 @@ facts, rotating daily so facts rarely repeat.
 
 ## 🎮 Play it right now
 
+- **Hosted (share this link):** https://alirizwantariq.github.io/word-play/game/index.html
+- **Locally:**
+
 ```bash
 open game/index.html
 ```
