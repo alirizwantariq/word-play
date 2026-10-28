@@ -69,39 +69,49 @@ Install it with:
 
 ## 3. Build the signed release bundle (AAB)
 
-Google Play requires an **Android App Bundle (.aab)** signed with your own keystore.
+Google Play requires an **Android App Bundle (.aab)**.
 
-**3.1. Create a keystore (one-time — keep this file safe forever!)**
+Play Console only accepts AABs **signed with your upload key**. Google then
+re-signs the app with its own key (Play App Signing).
 
-```bash
-keytool -genkeypair -v \
-  -keystore chain-words-release.jks \
-  -alias chainwords \
-  -keyalg RSA -keysize 2048 -validity 10000
+**3.1. The upload keystore (already created — back it up!)**
+
+The upload key lives in two git-ignored files:
+
+- `android/word-play-upload.jks` — the keystore (alias `wordplay-upload`)
+- `android/keystore.properties` — its path, alias and password
+
+Copy **both** to a safe place (password manager / cloud drive). If they're lost,
+you can't ship updates until Google resets your upload key (Play Console →
+Setup → App signing → Request upload key reset), which takes days.
+
+To recreate them on a new machine, restore the backup into `android/`. To start
+over with a brand-new key (only before the first upload), run `keytool -genkeypair`
+and write a matching `keystore.properties`:
+
+```properties
+storeFile=word-play-upload.jks
+storePassword=...
+keyAlias=wordplay-upload
+keyPassword=...
 ```
-
-(Any JDK works — you can also run `keytool` from Android Studio's JBR:
-`"/Applications/Android Studio.app/Contents/jbr/Contents/Home/bin/keytool"`.)
 
 **3.2. Build the signed AAB**
 
-Easiest: in Android Studio use **Build → Generate Signed App Bundle / APK…**
-→ *Android App Bundle* → pick your keystore → **release**.
-
-Or from the CLI:
-
 ```bash
 cd android
-JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home" \
-  ./gradlew bundleRelease
-# produces app/build/outputs/bundle/release/app-release.aab
-# (unsigned — Play signs it for you via Play App Signing, see step 4)
+./gradlew bundleRelease
+# -> app/build/outputs/bundle/release/app-release.aab (signed with the upload key)
+jarsigner -verify app/build/outputs/bundle/release/app-release.aab   # "jar verified."
 ```
 
-> **Play App Signing:** when you upload your first AAB, Play Console asks you to
-> enroll in *Play App Signing*. Google manages the signing key; you keep your
-> upload keystore (`chain-words-release.jks`) for future updates. Just follow the
-> default (recommended) option.
+`app/build.gradle` signs release builds automatically when
+`keystore.properties` exists; without it the AAB comes out unsigned and Play
+rejects it.
+
+> **Play App Signing:** on your first upload, accept the default — *Google
+> manages and protects your app signing key*. Your `.jks` stays the
+> **upload** key for every future update.
 
 ---
 
@@ -133,9 +143,7 @@ https://alirizwantariq.github.io/word-play/store-listing/privacy-policy.html
 
 Use that URL in the Play Console privacy policy field.
 
-> ⚠️ One step left: replace `your-email@example.com` inside
-> `store-listing/privacy-policy.html` with your real support email,
-> then commit + push — GitHub Pages updates automatically.
+> Support/contact email in the policy: `blankthedev@gmail.com`.
 
 Bonus: the game itself is playable online at
 `https://alirizwantariq.github.io/word-play/game/index.html` — great for
@@ -145,21 +153,39 @@ sharing with testers before the Play Store launch.
 
 ## 6. ⚠️ Go live with REAL ads (required before production)
 
-The app ships with **Google's official TEST ad IDs** so you can test everything
-safely without an account. Test ads look real but pay nothing. Before going to
-production, swap in your own AdMob IDs:
+The app has two ad formats:
+
+- **Rewarded** — optional "watch ad → +100 coins" and Word Hunt letter hints.
+- **Interstitial** — a full-screen ad when the player taps on from a results
+  screen. Capped in `game/js/game.js` (`INTERSTITIAL_EVERY` = 3 rounds,
+  `INTERSTITIAL_GAP_MS` = 2 min since any ad, none in the first 2 min).
+
+Ads only load after Google's **UMP consent** flow allows it (the GDPR form for
+EEA/UK users). Settings shows a "Privacy options" button when UMP requires one.
+
+**Debug builds always use Google's TEST ad IDs** — safe to tap, they pay nothing.
+**Release builds** read your real IDs from `android/gradle.properties` and refuse to
+build while any of them is empty or still a test ID:
 
 1. Create a free **AdMob account** at admob.google.com → add your app
-   ("Word Play", Android, package `com.wordplay.game`).
-2. Create a **Rewarded** ad unit and copy its ID (`ca-app-pub-…/…`).
-3. Replace **2 strings** in the Android project:
-   - `android/app/src/main/AndroidManifest.xml` →
-     `com.google.android.gms.ads.APPLICATION_ID` = your AdMob **app ID**
-     (looks like `ca-app-pub-…~…`)
-   - `android/app/src/main/java/com/wordplay/game/MainActivity.kt` →
-     `TEST_AD_UNIT` = your AdMob **rewarded unit ID**
-     (looks like `ca-app-pub-…/…`)
-4. Rebuild the AAB (step 3) and upload.
+   ("Word Play", Android, package `com.blankthedev.wordplay`).
+2. Create a **Rewarded** and an **Interstitial** ad unit.
+3. Fill in `android/gradle.properties`:
+   ```properties
+   ADMOB_APP_ID=ca-app-pub-XXXXXXXXXXXXXXXX~YYYYYYYYYY
+   ADMOB_REWARDED_ID=ca-app-pub-XXXXXXXXXXXXXXXX/ZZZZZZZZZZ
+   ADMOB_INTERSTITIAL_ID=ca-app-pub-XXXXXXXXXXXXXXXX/WWWWWWWWWW
+   ```
+4. In AdMob → **Privacy & messaging → GDPR**, create and publish a consent
+   message for this app (otherwise the UMP form has nothing to show).
+5. Rebuild the AAB (step 3) and upload.
+
+> **Child-directed mode** (`ADMOB_CHILD_DIRECTED=true`, the default): every ad
+> request is tagged for COPPA/Families with G-rated, non-personalised ads, and
+> UMP shows no consent form. This is **required** while the Play Console target
+> audience includes under-13s (§4 / listing.md §6). Only set it to `false` if you
+> change the target audience to 13+ — that enables personalised ads (more
+> revenue) and the GDPR form, but drops the app from the kids audience.
 5. In AdMob, if you publish as a family/kids-friendly game, enable
    **"Families" ads** for this app (AdMob → Apps → your app → Ad content
    filtering) so only family-certified ads serve.
@@ -225,9 +251,9 @@ How to run it:
 - **Colors/theme:** tweak CSS variables at the top of `game/css/styles.css`.
 - **Sounds:** all effects are synthesized in `game/js/audio.js`.
 - **Icons:** edit `tools/make-icons.swift` and re-run it (`swift tools/make-icons.swift ..`).
-- **Keep Play happy:** `targetSdk` is 35. Google requires targeting an API within
-  1 year of the newest Android release — bump `compileSdk`/`targetSdk` in
-  `android/app/build.gradle` to 36 or 37 with your next update (before ~Oct 2027).
+- **Keep Play happy:** `targetSdk` is 36 (Play rejects new uploads below 36
+  since Aug 2026). Bump `compileSdk`/`targetSdk` each year when Google raises
+  the floor, and bump `versionCode` on every upload.
 
 ## 11. Future monetization (optional roadmap)
 

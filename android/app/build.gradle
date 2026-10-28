@@ -2,20 +2,66 @@ plugins {
     id 'com.android.application'
 }
 
+/* Real AdMob IDs come from gradle.properties. Only resolved when a release
+   task actually runs, so debug builds work with the properties left empty. */
+def admobId(String name) {
+    def releaseTask = gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') }
+    def v = (findProperty(name) ?: '').toString().trim()
+    if (releaseTask && (v.isEmpty() || v.startsWith('ca-app-pub-3940256099942544'))) {
+        throw new GradleException("Set a real $name in android/gradle.properties before building a release (see BUILD-AND-DEPLOY.md §6).")
+    }
+    return v.isEmpty() ? 'MISSING' : v
+}
+
+/* Upload-key signing for release builds. android/keystore.properties and the
+   .jks it points to are git-ignored - back both up, losing them means asking
+   Google for an upload-key reset. */
+def keystoreProps = new Properties()
+def keystoreFile = rootProject.file('keystore.properties')
+if (keystoreFile.exists()) keystoreFile.withInputStream { keystoreProps.load(it) }
+
 android {
     namespace 'com.wordplay.game'
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
-        applicationId "com.wordplay.game"
+        applicationId "com.blankthedev.wordplay"
         minSdk 24
-        targetSdk 35
-        versionCode 1
+        targetSdk 36
+        versionCode 3
         versionName "2.0.0"
+
+        buildConfigField "boolean", "ADMOB_CHILD_DIRECTED",
+            (findProperty('ADMOB_CHILD_DIRECTED') ?: 'true').toString()
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    signingConfigs {
+        release {
+            if (keystoreFile.exists()) {
+                storeFile rootProject.file(keystoreProps['storeFile'])
+                storePassword keystoreProps['storePassword']
+                keyAlias keystoreProps['keyAlias']
+                keyPassword keystoreProps['keyPassword']
+            }
+        }
     }
 
     buildTypes {
+        debug {
+            // Google's public TEST IDs - safe to click, pay nothing.
+            manifestPlaceholders = [admobAppId: 'ca-app-pub-3940256099942544~3347511713']
+            buildConfigField 'String', 'ADMOB_REWARDED_ID', '"ca-app-pub-3940256099942544/5224354917"'
+            buildConfigField 'String', 'ADMOB_INTERSTITIAL_ID', '"ca-app-pub-3940256099942544/1033173712"'
+        }
         release {
+            manifestPlaceholders = [admobAppId: admobId('ADMOB_APP_ID')]
+            buildConfigField 'String', 'ADMOB_REWARDED_ID', "\"${admobId('ADMOB_REWARDED_ID')}\""
+            buildConfigField 'String', 'ADMOB_INTERSTITIAL_ID', "\"${admobId('ADMOB_INTERSTITIAL_ID')}\""
+            if (keystoreFile.exists()) signingConfig signingConfigs.release
             minifyEnabled false
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -34,7 +80,9 @@ dependencies {
     implementation 'androidx.activity:activity-ktx:1.9.3'
     implementation 'androidx.webkit:webkit:1.12.1'
 
-    /* Optional rewarded ads. Uses Google's TEST ad units out of the box -
-       swap in your real AdMob IDs before going live (see BUILD-AND-DEPLOY.md). */
+    /* Ads: optional rewarded + capped interstitials. Debug builds use Google's
+       TEST units; release IDs come from gradle.properties (BUILD-AND-DEPLOY.md §6). */
     implementation 'com.google.android.gms:play-services-ads:24.6.0'
+    /* Google UMP: GDPR/UK consent form, required to serve ads in the EEA/UK. */
+    implementation 'com.google.android.ump:user-messaging-platform:3.2.0'
 }

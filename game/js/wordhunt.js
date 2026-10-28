@@ -140,6 +140,7 @@ window.WordHunt = (function () {
     save.huntBest = best;
     saveNow();
     window.CRWAudio.lose();
+    roundEnded();
     openOverlay(
       '<div class="ov-title">' + (complete ? "🏆 ALL FOUND!" : "TIME\'S UP!") + '</div>' +
       '<div class="ov-score">' + H.score + '<span> pts</span></div>' +
@@ -155,10 +156,10 @@ window.WordHunt = (function () {
     );
     document.getElementById("hunt-again").addEventListener("click", function () {
       var m = H.modeIdx, b = H.hintBoost;
-      closeOverlay(); start(null, m, b);
+      closeOverlay(); adBreak(function () { start(null, m, b); });
     });
     document.getElementById("hunt-home").addEventListener("click", function () {
-      closeOverlay(); leave(); renderHome();
+      closeOverlay(); leave(); adBreak(renderHome);
     });
   }
 

@@ -494,6 +494,7 @@ function levelComplete() {
   saveNow();
   window.CRWAudio.win();
   vibrate([30, 50, 30, 50, 60]);
+  roundEnded();
   openWin(stars, coins, firstTime);
 }
 
@@ -557,18 +558,23 @@ function openWin(stars, coins, firstTime) {
     if (n < stars) { window.CRWAudio.star(n); setTimeout(function () { playStarSound(n + 1); }, 300); }
   };
   playStarSound(0);
-  $("#ov-replay").addEventListener("click", function () { closeOverlay(); startLevel(p, l); });
-  $("#ov-home").addEventListener("click", function () { closeOverlay(); renderHome(); });
+  $("#ov-replay").addEventListener("click", function () {
+    closeOverlay(); adBreak(function () { startLevel(p, l); });
+  });
+  $("#ov-home").addEventListener("click", function () { closeOverlay(); adBreak(renderHome); });
   var nxt = $("#ov-next");
   if (nxt) nxt.addEventListener("click", function () {
     closeOverlay();
-    if (isLastOfPack) renderPacks();
-    else startLevel(p, l + 1);
+    adBreak(function () {
+      if (isLastOfPack) renderPacks();
+      else startLevel(p, l + 1);
+    });
   });
 }
 
 function openFail() {
   window.CRWAudio.lose();
+  roundEnded();
   openOverlay(
     '<div class="ov-title bad">CHAIN BROKEN!</div>' +
     '<div class="ov-text">Out of hearts. Want to try again?</div>' +
@@ -577,9 +583,9 @@ function openFail() {
     '<button id="ov-home" class="btn ghost">HOME</button></div>'
   );
   $("#ov-retry").addEventListener("click", function () {
-    closeOverlay(); startLevel(G.packIdx, G.levelIdx);
+    closeOverlay(); adBreak(function () { startLevel(G.packIdx, G.levelIdx); });
   });
-  $("#ov-home").addEventListener("click", function () { closeOverlay(); renderHome(); });
+  $("#ov-home").addEventListener("click", function () { closeOverlay(); adBreak(renderHome); });
 }
 
 function openGameOver() {
@@ -588,6 +594,7 @@ function openGameOver() {
   save.bestEndless = best;
   saveNow();
   window.CRWAudio.lose();
+  roundEnded();
   openOverlay(
     '<div class="ov-title bad">GAME OVER</div>' +
     '<div class="ov-score">' + G.score + '<span> pts</span></div>' +
@@ -597,7 +604,7 @@ function openGameOver() {
     '<button id="ov-again" class="btn primary big">↻ PLAY AGAIN</button>' +
     '<button id="ov-home" class="btn ghost">HOME</button></div>'
   );
-  $("#ov-again").addEventListener("click", function () { closeOverlay(); startEndless(); });
+  $("#ov-again").addEventListener("click", function () { closeOverlay(); adBreak(startEndless); });
   $("#ov-home").addEventListener("click", function () { closeOverlay(); renderHome(); });
 }
 
@@ -674,6 +681,8 @@ function openSettings() {
     '<i></i></button></div>' +
     '<div class="set-row"><span>Best endless score</span><b>★ ' + save.bestEndless + '</b></div>' +
     '<div class="set-row"><span>Best word hunt score</span><b>★ ' + (save.huntBest || 0) + '</b></div>' +
+    (privacyOptionsRequired() ?
+      '<button id="set-privacy" class="btn ghost">Privacy options</button>' : '') +
     '<button id="set-reset" class="btn danger">Reset all progress</button>' +
     '<div class="ov-text small">Word Play v2.0.0<br>3 word games · works offline · optional ads</div>' +
     '<button id="set-close" class="btn ghost">CLOSE</button>'
@@ -684,6 +693,9 @@ function openSettings() {
     window.CRWAudio.setEnabled(save.sound);
     this.classList.toggle("on", save.sound);
     if (save.sound) { window.CRWAudio.init(); window.CRWAudio.click(); }
+  });
+  if ($("#set-privacy")) $("#set-privacy").addEventListener("click", function () {
+    window.AndroidBridge.showPrivacyOptions();
   });
   $("#set-reset").addEventListener("click", function () {
     if (this.dataset.confirm) {
@@ -777,13 +789,52 @@ window.__adReward = function (ok) {
   var cb = pendingAdReward;
   pendingAdReward = null;
   if (!cb) {                          /* default reward: coins */
-    if (ok) { addCoins(100); toast("+100 coins! ⚡"); }
+    if (ok) { lastAdAt = Date.now(); addCoins(100); toast("+100 coins! ⚡"); }
     else toast("Ad not ready yet — try again in a moment");
     return;
   }
-  if (ok) cb(true);
+  if (ok) { lastAdAt = Date.now(); cb(true); }
   else toast("Ad not ready yet — try again in a moment");
 };
+
+/* ---------------- Interstitial ads (Android only) ----------------
+   Shown only at round breaks, when the player taps to move on from a
+   results screen: at most one per INTERSTITIAL_EVERY finished rounds,
+   never within INTERSTITIAL_GAP_MS of any other ad (rewarded included)
+   and never in the first INTERSTITIAL_GAP_MS of a session. */
+
+var INTERSTITIAL_EVERY = 3;
+var INTERSTITIAL_GAP_MS = 2 * 60 * 1000;
+var roundsSinceAd = 0;
+var lastAdAt = Date.now();
+var pendingAdBreak = null;
+
+function roundEnded() { roundsSinceAd++; }
+
+/* Runs then() right away, or after an interstitial if one is due. */
+function adBreak(then) {
+  var bridge = window.AndroidBridge;
+  var due = roundsSinceAd >= INTERSTITIAL_EVERY &&
+    Date.now() - lastAdAt >= INTERSTITIAL_GAP_MS;
+  if (due && bridge && bridge.showInterstitial && bridge.showInterstitial()) {
+    roundsSinceAd = 0;
+    lastAdAt = Date.now();
+    pendingAdBreak = then;
+    return;
+  }
+  then();
+}
+
+window.__interstitialDone = function () {
+  var cb = pendingAdBreak;
+  pendingAdBreak = null;
+  if (cb) cb();
+};
+
+function privacyOptionsRequired() {
+  return !!(window.AndroidBridge && window.AndroidBridge.privacyOptionsRequired &&
+    window.AndroidBridge.privacyOptionsRequired());
+}
 
 function watchAd() {
   requestAd(function () { addCoins(100); toast("+100 coins! ⚡"); });
@@ -1207,8 +1258,8 @@ document.addEventListener("DOMContentLoaded", function () {
   });
   $("#duel-write-done").addEventListener("click", function () { WordDuel.confirmWord(); });
   $("#duel-pass-btn").addEventListener("click", function () { WordDuel.passAction(); });
-  $("#duel-again").addEventListener("click", function () { WordDuel.again(); });
-  $("#duel-home").addEventListener("click", function () { WordDuel.leave(); renderHome(); });
+  $("#duel-again").addEventListener("click", function () { adBreak(WordDuel.again); });
+  $("#duel-home").addEventListener("click", function () { WordDuel.leave(); adBreak(renderHome); });
 
   /* --- Word Hunt (mode picker -> easy / classic) --- */
   $("#btn-hunt").addEventListener("click", function () {

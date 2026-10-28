@@ -359,6 +359,7 @@ window.WordDuel = (function () {
       list.appendChild(row);
     });
     window.CRWAudio.win();
+    roundEnded();
   }
 
   function again() {
@@ -377,7 +378,7 @@ window.WordDuel = (function () {
     window.CRWAudio.click();
     var msg = "Play Word Play with me! 🎮 3 quick word games — pass & play " +
       "Word Duel on one phone. Get it free: " +
-      "https://play.google.com/store/apps/details?id=com.wordplay.game";
+      "https://play.google.com/store/apps/details?id=com.blankthedev.wordplay";
     if (window.AndroidBridge && window.AndroidBridge.shareText) {
       window.AndroidBridge.shareText(msg);
     } else if (navigator.share) {

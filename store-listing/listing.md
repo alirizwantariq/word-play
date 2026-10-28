@@ -19,7 +19,7 @@ Copy-paste everything below into **Google Play Console → Create app**.
 
 ### Short description (80 chars max)
 ```
-Chain Reaction, Word Duel & Word Hunt. 80 levels. Play friends offline. Fun 5-95.
+3 offline word games: Chain Reaction, Word Duel & Word Hunt. 80 puzzle levels!
 ```
 
 ### Full description (4000 chars max)
@@ -60,7 +60,7 @@ WHY YOU'LL LOVE IT
 ⭐ Quick rounds — perfect for waiting rooms, commutes and family game night
 ⭐ Builds vocabulary & lateral thinking for kids, sharpens adult brains
 ⭐ Beautiful, colorful, touch-friendly design
-⭐ Works 100% OFFLINE — no Wi-Fi needed (except optional rewarded ads)
+⭐ Works 100% OFFLINE — no Wi-Fi needed
 ⭐ No sign-up. No chat. No purchases. Kid-safe.
 ⭐ Optional: watch a short ad to earn +100 hint coins
 
@@ -89,11 +89,11 @@ clever pun — grab your friends and start playing with words today! 🎉
 
 | Question | Answer |
 |---|---|
-| Does your app contain ads? | **Yes** — rewarded video ads only (optional "watch ad → +100 coins") |
+| Does your app contain ads? | **Yes** — optional rewarded video ads ("watch ad → +100 coins") + interstitials between rounds (max 1 per 3 rounds, ≥2 min apart) |
 
-> The app ships with Google's **test ad units**. Before you upload to production
-> you MUST replace them with your own AdMob IDs (see BUILD-AND-DEPLOY.md §6),
-> otherwise testers see test ads and you earn nothing.
+> Debug builds use Google's **test ad units**. A release build will not compile
+> until your real AdMob IDs are in `android/gradle.properties`
+> (see BUILD-AND-DEPLOY.md §6).
 
 ---
 
@@ -113,17 +113,17 @@ clever pun — grab your friends and start playing with words today! 🎉
 | Is it a social app that allows user-to-user contact? | No |
 | Unrestricted web browsing? | No |
 
-Result: **Rated Everyone** (rewarded ads are permitted at this rating).
+Result: **Rated Everyone** (ads are permitted at this rating; requests are tagged child-directed and capped at G).
 
 ---
 
-## 5. Data safety section (answers with rewarded ads enabled)
+## 5. Data safety section (answers with ads enabled)
 
 | Question | Answer |
 |---|---|
 | Does your app collect user data? | **Yes** |
 | Data type | **Device or other IDs** (advertising ID via Google AdMob SDK) |
-| Is this data shared? | Yes — shared with ad networks (Google AdMob) to serve rewarded ads |
+| Is this data shared? | Yes — shared with ad networks (Google AdMob) to serve ads |
 | Purposes | Advertising / Analytics (ad performance) |
 | Data encrypted in transit | **Yes** (HTTPS) |
 | Can users request data deletion? | **No** — the data collected is the device advertising ID; users can reset it any time in Android Settings → Ads, or opt out via Privacy → Ads. State this in the "data deletion" note field. |
@@ -152,13 +152,13 @@ Result: **Rated Everyone** (rewarded ads are permitted at this rating).
 
 | Item | Answer |
 |---|---|
-| Ads | **Contains ads** (rewarded, optional) |
+| Ads | **Contains ads** (optional rewarded + between-round interstitials) |
 | In-app purchases | None |
 | News app | No |
 | COVID-19 app | No |
 | Government app | No |
 | Financial features | No |
 | Health apps | No |
-| Audio | Brief synthesized sound effects; rewarded videos (network-served) |
+| Audio | Brief synthesized sound effects; video ads (network-served) |
 | 2D/3D rendering | 2D only |
 | AR | No |
