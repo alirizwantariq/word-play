@@ -23,9 +23,9 @@ function cdp(expr) {
 function ensureApp() {
   const focus = execSync(`${ADB} shell dumpsys window | grep mCurrentFocus`, { maxBuffer: 1 << 20 }).toString();
   if (!focus.includes("wordplay")) {
-    execSync(`${ADB} shell am start -n com.wordplay.game/.MainActivity`, { stdio: "ignore" });
+    execSync(`${ADB} shell am start -n com.blankthedev.wordplay/com.wordplay.game.MainActivity`, { stdio: "ignore" });
     execSync("sleep 3");
-    const pid = execSync(`${ADB} shell pidof com.wordplay.game`).toString().trim();
+    const pid = execSync(`${ADB} shell pidof com.blankthedev.wordplay`).toString().trim();
     execSync(`${ADB} forward tcp:9222 localabstract:webview_devtools_remote_${pid}`, { stdio: "ignore" });
   }
   /* wait until the game page is actually interactive */

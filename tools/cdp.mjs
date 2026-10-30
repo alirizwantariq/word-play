@@ -9,7 +9,7 @@ const BASE = "http://localhost:9222";
 
 function reforward() {
   try {
-    const pid = execSync(`${ADB} shell pidof com.wordplay.game`).toString().trim();
+    const pid = execSync(`${ADB} shell pidof com.blankthedev.wordplay`).toString().trim();
     if (pid) execSync(`${ADB} forward tcp:9222 localabstract:webview_devtools_remote_${pid}`);
   } catch (e) { /* app not running */ }
 }
