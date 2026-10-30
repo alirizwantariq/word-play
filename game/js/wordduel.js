@@ -91,7 +91,7 @@ window.WordDuel = (function () {
     show("write");
     var p = writer();
     document.getElementById("duel-write-head").innerHTML =
-      "<b>" + p.name + "</b>, write your secret word!";
+      "<b>" + p.name + "</b> · secret word";
 
     /* category chips */
     var cats = document.getElementById("duel-cats");

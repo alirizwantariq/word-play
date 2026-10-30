@@ -3,6 +3,7 @@ package com.wordplay.game
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.webkit.JavascriptInterface
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
@@ -202,6 +203,20 @@ class MainActivity : AppCompatActivity() {
         webView = WebView(this)
         setContentView(webView)
 
+        /* Keyboard fix for edge-to-edge (Android 15): pad the WebView above
+           the IME so inputs & buttons stay visible while typing. */
+        androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(webView) { v, insets ->
+            val ime = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+            v.setPadding(0, 0, 0, ime)
+            insets
+        }
+
+        /* Allow Chrome DevTools remote debugging for debug/test builds
+           (chrome://inspect) - never active in release. */
+        if ((applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
+            WebView.setWebContentsDebuggingEnabled(true)
+        }
+
         webView.settings.apply {
             javaScriptEnabled = true
             domStorageEnabled = true          // localStorage for progress/stars/coins
@@ -214,7 +229,14 @@ class MainActivity : AppCompatActivity() {
             override fun shouldInterceptRequest(
                 view: WebView,
                 request: WebResourceRequest
-            ): WebResourceResponse? = assetLoader.shouldInterceptRequest(request.url)
+            ): WebResourceResponse? {
+                /* Serve game assets straight from the APK, and never let
+                   the WebView HTTP cache keep an old copy after an app
+                   update (stale JS/CSS would break the new build). */
+                val res = assetLoader.shouldInterceptRequest(request.url) ?: return null
+                res.responseHeaders = mapOf("Cache-Control" to "no-store")
+                return res
+            }
 
             override fun shouldOverrideUrlLoading(
                 view: WebView,

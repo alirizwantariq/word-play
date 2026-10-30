@@ -67,7 +67,7 @@
     <!-- ============ PACK SELECT ============ -->
     <section id="screen-packs" class="screen">
       <header class="bar">
-        <button id="back-packs" class="icon-btn">←</button>
+        <button id="back-packs" class="icon-btn" aria-label="Back"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M19 12H5m6-6-6 6 6 6"/></svg></button>
         <div class="bar-title">Chain Reaction — Packs</div>
         <div id="packs-stars" class="stat-chip">★ 0</div>
       </header>
@@ -77,7 +77,7 @@
     <!-- ============ LEVEL SELECT ============ -->
     <section id="screen-levels" class="screen">
       <header class="bar">
-        <button id="back-levels" class="icon-btn">←</button>
+        <button id="back-levels" class="icon-btn" aria-label="Back"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M19 12H5m6-6-6 6 6 6"/></svg></button>
         <div id="levels-title" class="bar-title"></div>
         <div id="levels-stars" class="stat-chip">★ 0</div>
       </header>
@@ -87,7 +87,7 @@
     <!-- ============ CHAIN REACTION GAME ============ -->
     <section id="screen-game" class="screen">
       <header class="bar">
-        <button id="back-game" class="icon-btn">←</button>
+        <button id="back-game" class="icon-btn" aria-label="Back"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M19 12H5m6-6-6 6 6 6"/></svg></button>
         <div id="game-label" class="bar-title small"></div>
         <div class="bar-right">
           <span id="game-score" class="stat-chip score">0</span>
@@ -116,9 +116,9 @@
     <!-- ============ WORD DUEL: Guess the Word ============ -->
     <section id="duel-setup" class="screen">
       <header class="bar">
-        <button id="duel-back1" class="icon-btn">←</button>
+        <button id="duel-back1" class="icon-btn" aria-label="Back"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M19 12H5m6-6-6 6 6 6"/></svg></button>
         <div class="bar-title">Word Duel</div>
-        <div class="bar-title small">pass &amp; play</div>
+        <div class="bar-sub">pass &amp; play</div>
       </header>
       <div class="duel-body">
         <div class="duel-h" style="text-align:center">How many players?</div>
@@ -131,7 +131,7 @@
 
     <section id="duel-write" class="screen">
       <header class="bar">
-        <button id="duel-back2" class="icon-btn">←</button>
+        <button id="duel-back2" class="icon-btn" aria-label="Back"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M19 12H5m6-6-6 6 6 6"/></svg></button>
         <div id="duel-write-head" class="bar-title small"></div>
         <div id="duel-word-count" class="stat-chip"></div>
       </header>
@@ -163,7 +163,7 @@
 
     <section id="duel-guess" class="screen">
       <header class="bar">
-        <button id="duel-back3" class="icon-btn">←</button>
+        <button id="duel-back3" class="icon-btn" aria-label="Back"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M19 12H5m6-6-6 6 6 6"/></svg></button>
         <div id="duel-guess-head" class="bar-title small"></div>
       </header>
       <div class="duel-body">
@@ -187,18 +187,19 @@
     <!-- ============ WORD HUNT ============ -->
     <section id="screen-hunt" class="screen">
       <header class="bar">
-        <button id="hunt-back" class="icon-btn">←</button>
-        <div class="bar-title">Word Hunt <span id="hunt-mode" style="font-size:12px"></span></div>
-        <div class="bar-right">
+        <button id="hunt-back" class="icon-btn" aria-label="Back"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M19 12H5m6-6-6 6 6 6"/></svg></button>
+        <div class="bar-title">Word Hunt</div>
+        <div class="bar-right hunt-right">
+          <span id="hunt-mode"></span>
           <span id="hunt-timer" class="stat-chip score">90s</span>
         </div>
       </header>
       <div class="game-status">
-        <div class="ov-text small" style="flex:1">Swipe across hidden words →</div>
-        <button id="btn-hunt-hint" class="btn hint" style="padding:9px 14px;font-size:13px">
-          <span class="bulb"></span> 25
+        <div class="ov-text small" style="flex:1">Swipe to find words →</div>
+        <button id="btn-hunt-hint" class="btn hint" style="padding:9px 12px;font-size:12.5px">
+          <span class="bulb"></span> HINT · 25
         </button>
-        <span id="hunt-score" class="stat-chip coins" style="color:#fff">0</span>
+        <span id="hunt-score" class="stat-chip score">0 pts</span>
       </div>
       <div id="hunt-grid" class="hunt-grid"></div>
       <div id="hunt-cancelbar" class="cancelbar"></div>

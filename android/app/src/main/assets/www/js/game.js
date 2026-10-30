@@ -113,6 +113,13 @@ var currentScreen = "screen-home";
 /* Activates the screen element with the given id (e.g. "screen-home",
    "duel-guess", "screen-hunt") and hides all others. */
 function showScreen(id) {
+  /* Leaving Word Hunt via any path must stop its timer - otherwise a
+     running game pops its "TIME'S UP" overlay over whatever screen
+     the user moved on to. */
+  if (currentScreen === "screen-hunt" && id !== "screen-hunt" &&
+      window.WordHunt && WordHunt.active()) {
+    WordHunt.leave();
+  }
   currentScreen = id;
   $$(".screen").forEach(function (el) {
     el.classList.toggle("active", el.id === id);
@@ -154,7 +161,10 @@ function renderHome() {
   $("#home-coins").textContent = save.coins;
   var nxt = nextUnfinished();
   $("#btn-continue").innerHTML =
-    nxt ? "▶  CHAIN REACTION — LEVEL " + (nxt.l + 1) : "★  ALL LEVELS DONE!";
+    nxt
+      ? '<span>▶ CHAIN REACTION</span><span class="btn-sub">LEVEL ' +
+        (nxt.l + 1) + " · PACK " + (nxt.p + 1) + "</span>"
+      : '<span>★ ALL LEVELS DONE!</span>';
 }
 
 /* ---------------- PACKS ---------------- */
@@ -181,8 +191,8 @@ function renderPacks() {
       '<div class="pack-meta">★ ' + earned + '/' + maxStars + '</div>' +
       (unlocked ? "" :
         '<div class="pack-lock">' +
-        '<svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M17 9V7a5 5 0 0 0-10 0v2H5v13h14V9h-2zm-8-2a3 3 0 0 1 6 0v2H9V7z"/></svg>' +
-        '<span>Finish 7 levels<br>of the pack before</span></div>');
+        '<svg viewBox="0 0 24 24" width="14" height="14"><path fill="currentColor" d="M17 9V7a5 5 0 0 0-10 0v2H5v13h14V9h-2zm-8-2a3 3 0 0 1 6 0v2H9V7z"/></svg>' +
+        '<span>Finish 7 levels to unlock</span></div>');
     if (unlocked) {
       card.addEventListener("click", function () {
         window.CRWAudio.click();
@@ -514,11 +524,25 @@ function endlessChainComplete() {
 
 /* ---------------- Overlays ---------------- */
 
+/* Tap-through shield: tiles react on pointerdown, so the tap that
+   finishes a level can release ("click") on a button of the overlay
+   that just appeared under the finger. Swallow real-user clicks for
+   a short window after an overlay opens; programmatic .click() from
+   tests (isTrusted=false) still passes through. */
+var overlayShieldUntil = 0;
+document.addEventListener("click", function (e) {
+  if (e.isTrusted && Date.now() < overlayShieldUntil) {
+    e.stopPropagation();
+    e.preventDefault();
+  }
+}, true);
+
 function openOverlay(html, opts) {
   var ov = $("#overlay");
   ov.innerHTML = '<div class="card">' + html + '</div>' +
     (opts && opts.confetti ? '<canvas id="confetti"></canvas>' : '');
   ov.classList.add("show");
+  overlayShieldUntil = Date.now() + 400;
   if (opts && opts.confetti) startConfetti();
 }
 
@@ -647,14 +671,14 @@ function openHuntModePicker() {
     '<button id="hunt-mode-btn-2" class="btn secondary">🧘 CLASSIC<br>' +
     '<span class="btn-sub">90 seconds — hints every 12s</span></button>' +
     '</div>' +
-    '<button id="hunt-boost" class="btn hint">✨ Letter hints: OFF — tap to watch a short ad &amp; enable</button>'
+    '<button id="hunt-boost" class="btn hint">✨ Watch a short ad → letter hints for this game</button>'
   );
   var boostBtn = $("#hunt-boost");
   boostBtn.addEventListener("click", function () {
     if (boost.on) return;
     requestAd(function () {
       boost.on = true;
-      boostBtn.textContent = "✨ Letter hints: ON for this game!";
+      boostBtn.textContent = "✨ Letter hints ON for this game!";
       boostBtn.classList.add("on");
       toast("Random letters will glow to help you ✨");
     });
@@ -939,6 +963,11 @@ function runDemo() {
 function runTests() {
   var log = [];
   function T(name, cond) { log.push((cond ? "PASS" : "FAIL") + " " + name); }
+
+  /* hermetic: always run against fresh progress (device localStorage
+     persists across app restarts, which is the point - but tests
+     must not depend on it) */
+  save = { coins: START_COINS, sound: true, stars: {}, bestEndless: 0, seenTutorial: true };
   function tapCorrect() {
     var need = G.chain[G.nextIdx];
     var el = $$("#tile-grid .tile").filter(function (t) { return t.dataset.word === need; })[0];

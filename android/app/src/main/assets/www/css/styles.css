@@ -84,6 +84,7 @@ html.full #app { max-width: none; }
   flex: none;
   transition: transform .1s;
 }
+.icon-btn svg { display: block; }
 .icon-btn:active { transform: scale(.92); }
 
 .stat-chip {
@@ -196,7 +197,15 @@ html.full #app { max-width: none; }
   text-overflow: ellipsis;
 }
 .bar-title.small { font-size: 15px; }
-.bar-right { display: flex; }
+.bar-right { display: flex; align-items: center; gap: 6px; }
+.bar-sub {
+  flex: none;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: .3px;
+  color: rgba(255,255,255,.55);
+  white-space: nowrap;
+}
 
 /* ---------------- packs ---------------- */
 
@@ -227,27 +236,29 @@ html.full #app { max-width: none; }
   transition: transform .12s;
 }
 .pack-card:active { transform: scale(.97); }
-.pack-card.locked { border-color: rgba(255,255,255,.16); cursor: default; }
+.pack-card.locked {
+  border-color: rgba(255,255,255,.12);
+  background: rgba(255,255,255,.045);
+  cursor: default;
+}
 .pack-num { font-size: 11px; font-weight: 800; letter-spacing: 2px; color: var(--pk, var(--accent)); opacity: .95; }
 .pack-card.locked .pack-num { color: rgba(255,255,255,.4); }
 .pack-name { font-size: 19px; font-weight: 900; }
+.pack-card.locked .pack-name { color: rgba(255,255,255,.6); }
 .pack-tag { font-size: 12.5px; color: rgba(255,255,255,.62); font-weight: 600; }
+.pack-card.locked .pack-tag { color: rgba(255,255,255,.35); }
 .pack-meta { margin-top: auto; font-size: 13px; font-weight: 800; color: var(--gold); }
+.pack-card.locked .pack-meta { display: none; }
 .pack-lock {
-  position: absolute;
-  inset: 0;
-  background: rgba(13, 9, 32, .72);
-  backdrop-filter: blur(3px);
+  margin-top: auto;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 6px;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
-  text-align: center;
-  color: rgba(255,255,255,.75);
+  color: rgba(255,255,255,.5);
 }
+.pack-lock svg { flex: none; opacity: .8; }
 
 /* ---------------- levels ---------------- */
 
@@ -610,6 +621,15 @@ html.full #app { max-width: none; }
 .btn.secondary { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 22px; }
 .game-ico { font-size: 20px; }
 .btn-sub { font-size: 11px; font-weight: 700; color: rgba(255,255,255,.55); letter-spacing: .3px; }
+.btn.primary .btn-sub { color: rgba(255,255,255,.85); }
+#btn-continue {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+#btn-continue .btn-sub { font-size: 11.5px; letter-spacing: 1.6px; white-space: nowrap; }
 .home-mini { display: flex; gap: 10px; justify-content: center; }
 .home-mini .btn { padding: 8px 18px; font-size: 14px; }
 
@@ -730,7 +750,9 @@ html.full #app { max-width: none; }
   border-radius: 999px;
   padding: 3px 9px;
   font-weight: 800;
+  white-space: nowrap;
 }
+#hunt-mode { display: flex; align-items: center; gap: 4px; }
 
 .hint-line {
   background: rgba(255,212,71,.12);
@@ -802,7 +824,11 @@ html.full #app { max-width: none; }
 
 #duel-sugg-label { text-align: left; }
 
-.big-hearts { justify-content: center; gap: 8px; }
+.big-hearts { justify-content: center; gap: 8px; flex: none; }
+/* keep the word + keyboard vertically balanced instead of leaving one
+   huge gap: auto margins above the blanks and above the keyboard share
+   the leftover space */
+#duel-guess #duel-blanks { margin-top: auto; }
 .big-hearts .heart { font-size: 28px; }
 .big-hearts .heart.lost { animation: heartpop .35s ease; }
 @keyframes heartpop { 40% { transform: scale(1.6); } }
@@ -943,7 +969,7 @@ html.full #app { max-width: none; }
   gap: 6px;
   align-self: center;
   width: 100%;
-  max-width: 460px;
+  max-width: min(460px, 100%, calc(100dvh - 240px));  /* always fits short screens too */
   touch-action: none;
   user-select: none;
 }
@@ -978,6 +1004,7 @@ html.full #app { max-width: none; }
   justify-content: center;
   padding-top: 14px;
 }
+#screen-hunt { overflow-y: auto; }
 .hunt-word {
   letter-spacing: 2px;
   font-weight: 800;
@@ -991,4 +1018,88 @@ html.full #app { max-width: none; }
   background: rgba(107,203,119,.22);
   border: 1.5px solid rgba(107,203,119,.6);
   color: #B9F6C3;
+}
+/* ============================================================
+   TABLET / FOLDABLE layout (>= 700px wide)
+   One tasteful scale-up: bigger type, roomier tiles and grids,
+   so the game fills a 10" tablet instead of floating in a
+   phone-sized column. (The app is portrait-locked on phones.)
+   ============================================================ */
+
+@media (min-width: 700px) {
+  #app { max-width: 720px; }
+  .screen { padding: 20px 36px 24px; }
+  #screen-home { justify-content: center; gap: 24px; }
+  .bar { margin-bottom: 18px; }
+  .bar-title { font-size: 24px; }
+  .bar-title.small { font-size: 18px; }
+  .icon-btn { width: 52px; height: 52px; }
+  .icon-btn svg { width: 28px; height: 28px; }
+  .stat-chip { font-size: 17px; padding: 8px 18px; }
+  .pill-mini { font-size: 13px; }
+
+  /* home */
+  #btn-settings { top: 16px; right: 24px; }
+  #screen-home { padding-top: 64px; }
+  #screen-home .logo-tile { font-size: 58px; }
+  .logo-sub { font-size: 32px; letter-spacing: 14px; }
+  .wotd { padding: 18px 24px 20px; }
+  .wotd-word { font-size: 52px; }
+  .wotd-fact { font-size: 17px; }
+  .home-btns { max-width: 640px; width: 100%; margin: 0 auto; }
+  .btn { font-size: 21px; padding: 16px 30px; }
+  .btn.big { font-size: 25px; padding: 20px 36px; }
+  .btn-sub { font-size: 13.5px; }
+  .home-footer { font-size: 16px; }
+
+  /* packs + levels */
+  .packs-grid { grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .pack-card { min-height: 150px; padding: 22px 20px 18px; border-radius: 24px; }
+  .pack-num { font-size: 13px; }
+  .pack-name { font-size: 24px; }
+  .pack-tag { font-size: 15.5px; }
+  .pack-meta { font-size: 16px; }
+  .levels-grid { gap: 16px; }
+  .level-num { font-size: 30px; }
+
+  /* chain reaction play */
+  .chip { height: 56px; font-size: 21px; border-radius: 17px; }
+  .prompt { font-size: 20px; }
+  .heart { font-size: 28px; }
+  .tile { height: 150px; font-size: 26px; border-radius: 20px; }
+  .tile.sz-b { font-size: 22px; }
+  .tile.sz-c { font-size: 19px; }
+  .tile.sz-d { font-size: 17px; }
+  .tile-grid { gap: 16px; }
+  .btn.hint { font-size: 18px; }
+
+  /* duel */
+  .duel-h { font-size: 25px; }
+  .duel-h.big { font-size: 34px; }
+  .cat-chip, .sugg-chip { font-size: 17px; padding: 12px 20px; }
+  .duel-input-row input { font-size: 23px; padding: 18px 20px; }
+  .pill-btn { width: 96px; height: 96px; font-size: 38px; }
+  .blank { width: clamp(44px, 7vw, 64px); height: clamp(54px, 9vw, 76px); font-size: clamp(24px, 4.5vw, 38px); }
+  .big-hearts .heart { font-size: 36px; }
+  .key { height: 62px; font-size: 22px; }
+  .key-row { gap: 10px; }
+  .result-row { padding: 18px 24px; }
+  .result-name { font-size: 23px; }
+  .result-score { font-size: 28px; }
+  .pass-ico { font-size: 76px; }
+
+  /* hunt */
+  .hunt-grid { max-width: min(640px, 100%, calc(100dvh - 300px)); gap: 8px; }
+  .hunt-cell { font-size: 26px; }
+  .hunt-word { font-size: 17px; padding: 10px 18px; }
+  .game-status .ov-text.small { font-size: 16px; }
+
+  /* overlays */
+  #overlay .card { max-width: 560px; padding: 40px 34px 32px; }
+  .ov-title { font-size: 34px; }
+  .ov-score { font-size: 52px; }
+  .ov-text { font-size: 19px; }
+  .ov-text.small { font-size: 16px; }
+  .big-star { font-size: 72px; }
+  .mode-pick { max-width: 560px; margin: 0 auto; }
 }

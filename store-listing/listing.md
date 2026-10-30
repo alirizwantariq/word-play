@@ -73,8 +73,13 @@ clever pun — grab your friends and start playing with words today! 🎉
 |---|---|
 | App icon (512×512) | `icon-512.png` |
 | Feature graphic (1024×500) | `feature-graphic.png` |
-| Phone screenshots (1080×1920) — upload up to 8 | `screenshots/phone-home.png`, `phone-play.png`, `phone-duelwrite.png`, `phone-duel.png`, `phone-hunt.png`, `phone-win.png`, `phone-packs.png`, `phone-endless.png` |
-| 10" tablet (1600×2560) | `screenshots/tablet-play.png`, `screenshots/tablet-hunt.png` |
+| Phone screenshots (1080×1920, captured on a real Android device) — upload up to 8 | `screenshots/phone-home.png`, `phone-play.png`, `phone-duelwrite.png`, `phone-duel.png`, `phone-hunt.png`, `phone-win.png`, `phone-packs.png`, `phone-endless.png` (extra: `phone-levels.png`) |
+| 10" tablet (1600×2560, captured on a real Android device) | `screenshots/tablet-home.png`, `tablet-play.png`, `tablet-duel.png`, `tablet-hunt.png` (extras: `tablet-packs.png`, `tablet-levels.png`, `tablet-win.png`, `tablet-endless.png`, `tablet-duelwrite.png`) |
+
+To re-capture any of these from a connected device/emulator, run
+`node tools/store-shots.mjs phone` and `node tools/store-shots.mjs tablet`
+(the emulator must be at `wm size 1080x1920` + `wm density 420` for phone,
+`1600x2560` + `wm density 320` for tablet).
 
 ### Contact details
 | Field | Value |

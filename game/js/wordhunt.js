@@ -116,6 +116,9 @@ window.WordHunt = (function () {
 
   function tick() {
     if (!H) return;
+    /* safety: if the user somehow left the hunt screen, stop quietly
+       instead of popping the game-over overlay over another screen */
+    if (currentScreen !== "screen-hunt") { leave(); return; }
     H.timeLeft--;
     var t = document.getElementById("hunt-timer");
     t.textContent = H.timeLeft + "s";
@@ -205,11 +208,12 @@ window.WordHunt = (function () {
   /* ---------- rendering ---------- */
 
   function render() {
-    document.getElementById("screen-hunt").classList.add("active");
+    /* NOTE: does not manage the active class — the caller must call
+       showScreen("screen-hunt") first (all real entry points do). */
     var mode = MODES[H.modeIdx];
     document.getElementById("hunt-mode").innerHTML =
-      '<span class="pill-mini">' + mode.name + " · " + mode.time + "s</span>" +
-      (H.hintBoost ? '<span class="pill-mini easy">✨hints</span>' : "");
+      '<span class="pill-mini">' + mode.name + "</span>" +
+      (H.hintBoost ? '<span class="pill-mini easy" title="Letter hints on">✨</span>' : "");
     var g = document.getElementById("hunt-grid");
     g.innerHTML = "";
     H.grid.cells.forEach(function (ch, i) {
@@ -220,7 +224,7 @@ window.WordHunt = (function () {
       g.appendChild(c);
     });
     renderFound();
-    document.getElementById("hunt-score").textContent = H.score;
+    document.getElementById("hunt-score").textContent = H.score + " pts";
     var t = document.getElementById("hunt-timer");
     t.textContent = H.timeLeft + "s";
     t.classList.remove("urgent");
@@ -366,7 +370,7 @@ window.WordHunt = (function () {
     if (entry) {
       H.found.push(word);
       H.score += 10 + word.length * 2 + (entry.diagonal ? 5 : 0);
-      document.getElementById("hunt-score").textContent = H.score;
+      document.getElementById("hunt-score").textContent = H.score + " pts";
       entry.cells.forEach(function (cid, k) {
         var el = document.querySelector('.hunt-cell[data-id="' + cid + '"]');
         if (el) {
@@ -430,7 +434,7 @@ window.WordHunt = (function () {
       });
       H.found.push(entry.w);
       H.score = 10 + entry.w.length * 2 + (entry.diagonal ? 5 : 0);
-      document.getElementById("hunt-score").textContent = H.score;
+      document.getElementById("hunt-score").textContent = H.score + " pts";
       H.timeLeft = 43;
       document.getElementById("hunt-timer").textContent = "43s";
       renderFound();
