@@ -26,7 +26,7 @@ word-play/
 ├── store-listing/         Everything for the Play Console listing
 │   ├── icon-512.png           Play Store icon (512×512)
 │   ├── feature-graphic.png    Feature graphic (1024×500)
-│   ├── screenshots/           8 phone (1080×1920) + 2 tablet (1600×2560) shots
+│   ├── screenshots/           9 phone (1080×1920) + 9 tablet (1600×2560) device captures
 │   ├── listing.md             All listing texts + form answers (copy-paste)
 │   └── privacy-policy.html    Host this (see step 5)
 ├── tools/                 Icon generator (Swift), feature graphic source, pixel checkers
@@ -155,7 +155,8 @@ sharing with testers before the Play Store launch.
 
 The app has two ad formats:
 
-- **Rewarded** — optional "watch ad → +100 coins" and Word Hunt letter hints.
+- **Rewarded** — optional "watch ad → +100 coins" and the in-game Word Hunt
+  ✨ HINTS button (letter hints for that level).
 - **Interstitial** — a full-screen ad when the player taps on from a results
   screen. Capped in `game/js/game.js` (`INTERSTITIAL_EVERY` = 3 rounds,
   `INTERSTITIAL_GAP_MS` = 2 min since any ad, none in the first 2 min).

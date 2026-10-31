@@ -79,15 +79,22 @@ IDs, or §6 for a checklist to remove ads entirely and ship 100% ad-free.
 
 ## 🧪 QA status
 
-- ✅ 69/69 automated tests pass: Chain Reaction logic (21), full Word Duel
-  flow incl. banter callouts, banner-clear & uppercase regression (24),
-  Word Hunt incl. timed modes, letter hints, line selection & WOTD
-  rotation (24) — `?demo=test`
+- ✅ 78/78 automated tests pass: Chain Reaction logic (21), full Word Duel
+  flow incl. banter callouts, banner-clear & uppercase regression, Word Hunt
+  level ladder (tiers, per-level grids, untimed easy, reverse words, unlock +
+  coin rewards, in-game hints) & WOTD rotation — `?demo=test`
 - ✅ All 80 levels verified solvable + data-valid through the real engine
   (`?demo=verify`)
-- ✅ All screens DOM-verified in headless Chrome; all screenshots pixel-verified
+- ✅ 29/29 real-tap flows pass **on an Android emulator** (physical
+  `adb input` taps/swipes): a full Chain Reaction level, the whole Word Duel
+  write → lock-in → keyboard-solve path, and the Word Hunt picker → level 1 →
+  completion → unlock → NEXT LEVEL path — `tools/flows.mjs`
+- ✅ Layout audits clean at 412×732, 360×640 and 800×1280 (tablet):
+  no clipped, off-screen or truncated elements — `tools/audit.js`
+- ✅ 0 crashes across repeated cold launches (ad SDK UI-thread fix verified)
 - ✅ Android builds verified: `assembleDebug` (8.2 MB APK) and `bundleRelease`
   (6.2 MB AAB)
 - ✅ Toolchain: Gradle 9.6.0 / AGP 9.4.0 / built-in Kotlin / Java 25
-- ✅ Play asset sizes: icon 512×512, feature 1024×500, phone 1080×1920,
-  tablet 1600×2560
+- ✅ Play assets: icon 512×512, feature 1024×500, phone 1080×1920 and
+  tablet 1600×2560 — **all captured from a real Android device**
+  (`tools/store-shots.mjs`)

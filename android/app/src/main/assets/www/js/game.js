@@ -757,7 +757,7 @@ function openSettings() {
     (privacyOptionsRequired() ?
       '<button id="set-privacy" class="btn ghost">Privacy options</button>' : '') +
     '<button id="set-reset" class="btn danger">Reset all progress</button>' +
-    '<div class="ov-text small">Word Play v2.0.0<br>3 word games · works offline · optional ads</div>' +
+    '<div class="ov-text small">Word Play v2.1.0<br>3 word games · works offline · optional ads</div>' +
     '<button id="set-close" class="btn ghost">CLOSE</button>'
   );
   $("#set-sound").addEventListener("click", function () {

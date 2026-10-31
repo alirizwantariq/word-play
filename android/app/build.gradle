@@ -29,7 +29,7 @@ android {
         minSdk 24
         targetSdk 36
         versionCode 3
-        versionName "2.0.0"
+        versionName "2.1.0"
 
         buildConfigField "boolean", "ADMOB_CHILD_DIRECTED",
             (findProperty('ADMOB_CHILD_DIRECTED') ?: 'true').toString()
