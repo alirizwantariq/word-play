@@ -44,12 +44,15 @@ letter by letter:
 ✔ Invite-friends button + 2, 3 or 4 player rounds — no internet needed
 
 🔎 WORD HUNT
-Six words are hidden in a letter grid — across, down AND diagonally.
-Swipe across the letters (or tap first + last letter) to find them all!
-✔ THREE MODES: ⚡ BLITZ (30s) · 🏃 RUSH (60s) · 🧘 CLASSIC (90s)
-✔ Watch an optional short ad to enable letter hints — random single
-  letters glow to help you out (more often in faster modes, never too much)
-✔ Or spend coins on a manual HINT that glows a word's first letter
+Words hide in a letter grid — across, down AND diagonally (backwards
+on the hardest levels, marked ↩). Swipe across the letters (or tap
+first + last letter) to find them all!
+✔ 12 LEVELS across three tiers: EASY → MEDIUM → HARD
+✔ The grid grows and changes shape on every level (5×5 up to 9×9)
+✔ EASY levels are relaxed with NO timer — perfect for young players
+✔ Hints live inside the game: a manual HINT (25 coins) glows a word's
+  first letter, or watch one short ad to turn on ✨ automatic letter
+  hints for that level
 ✔ Stuck mid-selection? Tap outside the grid or the ✕ to cancel
 
 ✨ WORD OF THE DAY

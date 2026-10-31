@@ -293,6 +293,7 @@ window.WordDuel = (function () {
       }
       if (all) {
         D.solved = true;
+        save.duelSolved = (save.duelSolved || 0) + 1;   /* settings stat */
         guesser().score += 20;
         window.CRWAudio.win();
         callout("SOLVED! It was " + D.word + " 🏆");
@@ -345,6 +346,8 @@ window.WordDuel = (function () {
 
   function showResults() {
     show("results");
+    save.duelGames = (save.duelGames || 0) + 1;   /* settings stat */
+    saveNow();
     var ranked = D.players.slice().sort(function (a, b) { return b.score - a.score; });
     document.getElementById("duel-results-title").innerHTML =
       "🏆 <b>" + ranked[0].name + "</b> WINS!";

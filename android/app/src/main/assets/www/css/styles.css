@@ -1103,3 +1103,110 @@ html.full #app { max-width: none; }
   .big-star { font-size: 72px; }
   .mode-pick { max-width: 560px; margin: 0 auto; }
 }
+
+/* ============================================================
+   WORD HUNT v3: level ladder (easy → medium → hard) + in-game hints
+   ============================================================ */
+
+/* two roomy hint buttons side by side above the grid */
+.hunt-actions {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0 12px;
+}
+.hunt-actions .btn {
+  flex: 1;
+  font-size: 12.5px;
+  padding: 10px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.btn.hint.ad { border-style: dashed; }
+.hunt-actions .btn.disabled { opacity: .45; pointer-events: none; }
+
+/* tier pills in the hunt header */
+.pill-mini.tier-easy   { background: rgba(107,203,119,.25); color: #B9F6C3; }
+.pill-mini.tier-medium { background: rgba(255,212,71,.22);  color: #FFE38A; }
+.pill-mini.tier-hard   { background: rgba(255,77,109,.25);  color: #FFB3C2; }
+
+/* level picker overlay */
+.hl-tier {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 2.5px;
+  margin: 12px 0 6px;
+  text-align: left;
+}
+.hl-tier.tier-easy   { color: #B9F6C3; }
+.hl-tier.tier-medium { color: #FFE38A; }
+.hl-tier.tier-hard   { color: #FFB3C2; }
+.hl-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.hl-btn {
+  position: relative;
+  aspect-ratio: 1;
+  border: 2px solid rgba(255,255,255,.25);
+  border-radius: 16px;
+  background: rgba(255,255,255,.08);
+  color: #fff;
+  font-family: inherit;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  transition: transform .12s;
+}
+.hl-btn:active { transform: scale(.93); }
+.hl-btn.done { border-color: rgba(107,203,119,.7); background: rgba(107,203,119,.14); }
+.hl-btn.locked { border-color: rgba(255,255,255,.12); background: rgba(255,255,255,.03); color: rgba(255,255,255,.35); cursor: default; }
+.hl-num { font-size: 22px; font-weight: 900; line-height: 1; }
+.hl-size { font-size: 9.5px; font-weight: 700; color: rgba(255,255,255,.5); }
+.hl-btn.done .hl-size { color: #B9F6C3; }
+.hl-check {
+  position: absolute;
+  top: -6px; right: -4px;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: #6BCB77;
+  color: #0E2A16;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.4);
+}
+.hl-lock { position: absolute; font-size: 14px; top: 6px; right: 8px; opacity: .8; }
+
+/* reverse words (hard tier) get a little ↩ marker */
+.hunt-word.rev::after { content: " ↩"; font-size: 11px; opacity: .8; }
+
+/* settings: per-game stats block */
+.set-stats {
+  background: rgba(255,255,255,.06);
+  border: 1.5px solid rgba(255,255,255,.1);
+  border-radius: 16px;
+  padding: 10px 14px 12px;
+  margin: 10px 0;
+}
+.set-stats .set-row {
+  background: transparent;
+  padding: 7px 0;
+  border-radius: 0;
+  gap: 10px;
+}
+.set-stat-title {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 2.5px;
+  color: var(--gold);
+  text-align: left;
+  margin-bottom: 4px;
+}
+.set-stats .set-row span { font-size: 13px; font-weight: 800; }
+.set-stats .set-row b { font-size: 12px; font-weight: 700; color: rgba(255,255,255,.75); white-space: normal; text-align: right; }

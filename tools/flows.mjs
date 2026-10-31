@@ -22,6 +22,10 @@ function cdp(expr) {
 }
 function ensureApp() {
   const focus = execSync(`${ADB} shell dumpsys window | grep mCurrentFocus`, { maxBuffer: 1 << 20 }).toString();
+  if (focus.includes("AdActivity")) {          // dismiss a fullscreen interstitial
+    execSync(`${ADB} shell input keyevent 4`);
+    execSync("sleep 2");
+  }
   if (!focus.includes("wordplay")) {
     execSync(`${ADB} shell am start -n com.blankthedev.wordplay/com.wordplay.game.MainActivity`, { stdio: "ignore" });
     execSync("sleep 3");
@@ -125,13 +129,20 @@ async function duelFlow() {
 }
 
 async function huntFlow() {
-  console.log("— FLOW 3: Word Hunt, real taps + real swipe selection —");
+  console.log("— FLOW 3: Word Hunt, level ladder + real taps & swipes —");
   ensureApp();
   cdp('renderHome(); null');
   await tapEl('document.getElementById("btn-hunt")');
-  check("mode picker opens", cdp('document.getElementById("overlay").classList.contains("show")') === true);
-  await tapEl('document.getElementById("hunt-mode-btn-0")'); // BLITZ
-  check("hunt starts (BLITZ)", cdp('currentScreen') === "screen-hunt" && cdp('WordHunt.MODES[WordHunt._state().modeIdx].name') === "BLITZ");
+  check("level picker opens", cdp('document.getElementById("overlay").classList.contains("show")') === true);
+  check("picker lists all 12 levels", cdp('document.querySelectorAll(".hl-btn").length') === 12);
+  await tapEl('document.getElementById("hunt-level-btn-0")');   // level 1 (EASY)
+  check("level 1 starts (EASY, untimed)",
+    cdp('currentScreen') === "screen-hunt" &&
+    cdp('WordHunt.LEVELS[WordHunt._state().levelIdx].tier') === "EASY" &&
+    cdp('WordHunt._state().timeLeft') === 0);
+  check("in-game hint buttons exist",
+    !!cdp('document.getElementById("btn-hunt-hint") ? 1 : 0') &&
+    !!cdp('document.getElementById("btn-hunt-adhints") ? 1 : 0'));
 
   // REAL SWIPE along the first unfound word's full length
   const pts = cdp('(function(){var w=WordHunt._state().grid.words[0];return {word:w.w,cells:w.cells}})()');
@@ -149,12 +160,35 @@ async function huntFlow() {
   check("tap selects anchor + cancel bar",
     cdp('document.querySelectorAll("#hunt-grid .hunt-cell.sel").length') > 0 &&
     cdp('document.getElementById("hunt-cancelbar").classList.contains("show")') === true);
-  execSync(`${ADB} shell input tap ${Math.round(30 * DENSITY)} 70`); // tap outside (status row)
+  execSync(`${ADB} shell input tap 540 1830`); // tap the words list (below grid) = outside
   await sleep(400);
   check("no selection stuck", cdp('document.querySelectorAll("#hunt-grid .hunt-cell.sel").length') === 0);
+  check("still inside the hunt (back NOT hit)", cdp('currentScreen') === "screen-hunt");
+
+  // finish the level with real taps on first+last letters of each word
+  const rest = cdp('(function(){var s=WordHunt._state();return s.grid.words.filter(function(e){return s.found.indexOf(e.w)===-1;})})()');
+  for (const e of rest) {
+    const t1 = cdp(`(function(){var c=document.querySelectorAll('#hunt-grid .hunt-cell')[${e.cells[0]}];var r=c.getBoundingClientRect();return [r.left+r.width/2,r.top+r.height/2]})()`);
+    execSync(`${ADB} shell input tap ${Math.round(t1[0]*DENSITY)} ${Math.round(t1[1]*DENSITY)}`);
+    await sleep(350);
+    const t2 = cdp(`(function(){var c=document.querySelectorAll('#hunt-grid .hunt-cell')[${e.cells[e.cells.length-1]}];var r=c.getBoundingClientRect();return [r.left+r.width/2,r.top+r.height/2]})()`);
+    execSync(`${ADB} shell input tap ${Math.round(t2[0]*DENSITY)} ${Math.round(t2[1]*DENSITY)}`);
+    await sleep(500);
+  }
+  await sleep(900);
+  check("level 1 complete via real taps", cdp('document.getElementById("overlay").classList.contains("show")') === true &&
+    (cdp('document.querySelector("#overlay .ov-title") ? document.querySelector("#overlay .ov-title").textContent : ""') || "").includes("ALL FOUND"));
+  check("next level offered", !!cdp('document.getElementById("hunt-next") ? 1 : 0'));
+  check("level 2 unlocked", cdp('save.huntLevel') === 2);
+  /* the between-rounds interstitial has its own on-device cadence
+     (max 1 per 3 finished rounds) - don't fight a fullscreen ad here */
+  cdp('roundsSinceAd = 0; 1');
+  await tapEl('document.getElementById("hunt-next")');
+  check("NEXT LEVEL → level 2 starts",
+    cdp('currentScreen') === "screen-hunt" && cdp('WordHunt._state().levelIdx') === 1);
 
   key(4); await sleep(500);
-  check("back from hunt → home (timer stops)", cdp('currentScreen') === "screen-home" && cdp('WordHunt.active()') === false);
+  check("back from hunt → home (state cleared)", cdp('currentScreen') === "screen-home" && cdp('WordHunt.active()') === false);
 }
 
 async function exitFlow() {

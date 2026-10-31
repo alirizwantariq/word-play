@@ -48,7 +48,14 @@ var save = {
   sound: true,
   stars: {},          /* "p0l3": 0..3 */
   bestEndless: 0,
-  seenTutorial: false
+  seenTutorial: false,
+  /* Word Hunt level ladder (1-based highest unlocked) + per-mode stats */
+  huntLevel: 1,
+  huntDone: {},
+  huntWords: 0,
+  huntBest: 0,
+  duelGames: 0,
+  duelSolved: 0
 };
 
 function loadSave() {
@@ -62,6 +69,12 @@ function loadSave() {
         save.stars = data.stars || {};
         save.bestEndless = data.bestEndless || 0;
         save.seenTutorial = !!data.seenTutorial;
+        save.huntLevel = data.huntLevel || 1;
+        save.huntDone = data.huntDone || {};
+        save.huntWords = data.huntWords || 0;
+        save.huntBest = data.huntBest || 0;
+        save.duelGames = data.duelGames || 0;
+        save.duelSolved = data.duelSolved || 0;
       }
     }
   } catch (e) { /* private mode / WebView issues: play without saving */ }
@@ -69,6 +82,15 @@ function loadSave() {
 
 function saveNow() {
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) { }
+}
+
+/* factory for a fresh save (reset / tests / verification) */
+function freshSave(coins, sound) {
+  return {
+    coins: coins, sound: sound !== false, stars: {}, bestEndless: 0, seenTutorial: true,
+    huntLevel: 1, huntDone: {}, huntWords: 0, huntBest: 0,
+    duelGames: 0, duelSolved: 0
+  };
 }
 
 /* ---------------- Level helpers ---------------- */
@@ -658,53 +680,80 @@ function openTutorial() {
   });
 }
 
-function openHuntModePicker() {
-  var boost = { on: false };
-  openOverlay(
+/* Word Hunt level picker: 12 levels across the EASY / MEDIUM / HARD
+   tiers — grids grow and words get trickier as the level number rises.
+   Hints (coins + rewarded ad) live INSIDE the game, not here. */
+function openHuntLevelPicker() {
+  window.CRWAudio.click();
+  var unlocked = Math.max(1, Math.min(save.huntLevel || 1, WordHunt.LEVELS.length));
+  var html =
     '<div class="ov-title">WORD HUNT</div>' +
-    '<div class="ov-text small">Pick your challenge — 6 words, find them all!</div>' +
-    '<div class="mode-pick">' +
-    '<button id="hunt-mode-btn-0" class="btn primary big">⚡ BLITZ<br>' +
-    '<span class="btn-sub">30 seconds — hints every 5s</span></button>' +
-    '<button id="hunt-mode-btn-1" class="btn secondary">🏃 RUSH<br>' +
-    '<span class="btn-sub">60 seconds — hints every 8s</span></button>' +
-    '<button id="hunt-mode-btn-2" class="btn secondary">🧘 CLASSIC<br>' +
-    '<span class="btn-sub">90 seconds — hints every 12s</span></button>' +
-    '</div>' +
-    '<button id="hunt-boost" class="btn hint">✨ Watch a short ad → letter hints for this game</button>'
-  );
-  var boostBtn = $("#hunt-boost");
-  boostBtn.addEventListener("click", function () {
-    if (boost.on) return;
-    requestAd(function () {
-      boost.on = true;
-      boostBtn.textContent = "✨ Letter hints ON for this game!";
-      boostBtn.classList.add("on");
-      toast("Random letters will glow to help you ✨");
+    '<div class="ov-text small">Find every hidden word — the grid grows as you climb!</div>';
+  ["EASY", "MEDIUM", "HARD"].forEach(function (tier) {
+    html += '<div class="hl-tier tier-' + tier.toLowerCase() + '">' + tier + "</div>" +
+      '<div class="hl-row">';
+    WordHunt.LEVELS.forEach(function (lv, i) {
+      if (lv.tier !== tier) return;
+      var locked = i + 1 > unlocked;
+      var done = save.huntDone && !!save.huntDone[i];
+      html += '<button id="hunt-level-btn-' + i + '" class="hl-btn' +
+        (locked ? " locked" : "") + (done ? " done" : "") + '"' +
+        (locked ? " disabled" : "") + '>' +
+        '<span class="hl-num">' + (i + 1) + "</span>" +
+        '<span class="hl-size">' + lv.rows + "×" + lv.cols +
+        (lv.time ? " · " + lv.time + "s" : " · relaxed") + "</span>" +
+        (done ? '<span class="hl-check">✓</span>' : "") +
+        (locked ? '<span class="hl-lock">🔒</span>' : "") +
+        "</button>";
     });
+    html += "</div>";
   });
-  [0, 1, 2].forEach(function (idx) {
-    $("#hunt-mode-btn-" + idx).addEventListener("click", function () {
+  html += '<div class="ov-text small" style="margin-top:10px">' +
+    "Stuck in a game? Use the ✨ HINTS button there.</div>";
+  openOverlay(html);
+  WordHunt.LEVELS.forEach(function (lv, i) {
+    var b = document.getElementById("hunt-level-btn-" + i);
+    if (b && !b.disabled) b.addEventListener("click", function () {
       window.CRWAudio.click();
-      save.huntMode = idx;
-      saveNow();
-      var b = boost.on;
       closeOverlay();
       showScreen("screen-hunt");
-      WordHunt.start(null, idx, b);
+      WordHunt.start(null, i, false);
     });
   });
 }
 
+/* per-game stats for the settings screen */
+function gameStats() {
+  var chainTotal = PACKS.reduce(function (a, p) { return a + p.levels.length; }, 0);
+  var chainDone = 0;
+  PACKS.forEach(function (p, pi) {
+    p.levels.forEach(function (c, li) { if (getStars(pi, li) > 0) chainDone++; });
+  });
+  var maxStars = chainTotal * 3;
+  var huntDone = Object.keys(save.huntDone || {}).length;
+  return {
+    chain: "★ " + totalStars() + "/" + maxStars + " · " + chainDone + "/" + chainTotal + " levels",
+    duel: (save.duelGames || 0) + " duels · " + (save.duelSolved || 0) + " words solved",
+    hunt: huntDone + "/" + WordHunt.LEVELS.length + " levels · " + (save.huntWords || 0) +
+      " found · best " + (save.huntBest || 0)
+  };
+}
+
 function openSettings() {
   window.CRWAudio.click();
+  var st = gameStats();
   openOverlay(
     '<div class="ov-title">SETTINGS</div>' +
     '<div class="set-row"><span>Sound</span>' +
     '<button id="set-sound" class="switch ' + (save.sound ? "on" : "") + '">' +
     '<i></i></button></div>' +
-    '<div class="set-row"><span>Best endless score</span><b>★ ' + save.bestEndless + '</b></div>' +
-    '<div class="set-row"><span>Best word hunt score</span><b>★ ' + (save.huntBest || 0) + '</b></div>' +
+    '<div class="set-stats">' +
+    '<div class="set-stat-title">GAME STATS</div>' +
+    '<div class="set-row"><span>🔗 Chain Reaction</span><b>' + st.chain + '</b></div>' +
+    '<div class="set-row"><span>👥 Word Duel</span><b>' + st.duel + '</b></div>' +
+    '<div class="set-row"><span>🔎 Word Hunt</span><b>' + st.hunt + '</b></div>' +
+    '<div class="set-row"><span>∞ Endless best</span><b>★ ' + save.bestEndless + '</b></div>' +
+    '</div>' +
     (privacyOptionsRequired() ?
       '<button id="set-privacy" class="btn ghost">Privacy options</button>' : '') +
     '<button id="set-reset" class="btn danger">Reset all progress</button>' +
@@ -724,7 +773,7 @@ function openSettings() {
   $("#set-reset").addEventListener("click", function () {
     if (this.dataset.confirm) {
       localStorage.removeItem(SAVE_KEY);
-      save = { coins: START_COINS, sound: true, stars: {}, bestEndless: 0, seenTutorial: true };
+      save = freshSave(START_COINS);
       saveNow();
       closeOverlay();
       renderHome();
@@ -967,7 +1016,7 @@ function runTests() {
   /* hermetic: always run against fresh progress (device localStorage
      persists across app restarts, which is the point - but tests
      must not depend on it) */
-  save = { coins: START_COINS, sound: true, stars: {}, bestEndless: 0, seenTutorial: true };
+  save = freshSave(START_COINS);
   function tapCorrect() {
     var need = G.chain[G.nextIdx];
     var el = $$("#tile-grid .tile").filter(function (t) { return t.dataset.word === need; })[0];
@@ -1088,56 +1137,63 @@ function runTests() {
   T("p2 final score", WordDuel._state().players[1].score === 50);
   WordDuel.leave();
 
-  /* --- Word Hunt (diagonal support) --- */
+  /* --- Word Hunt: 12 levels across EASY / MEDIUM / HARD tiers --- */
   showScreen("screen-hunt");
-  WordHunt.start();
-  T("hunt grid is 8x8", document.querySelectorAll("#hunt-grid .hunt-cell").length === 64);
-  T("hunt lists 6 words", document.querySelectorAll("#hunt-words .hunt-word").length === 6);
-
+  WordHunt.start(1, 0);                      /* level 1: EASY 5x5 */
+  T("level 1 grid is 5x5", document.querySelectorAll("#hunt-grid .hunt-cell").length === 25);
+  T("level 1 lists 3 words", document.querySelectorAll("#hunt-words .hunt-word").length === 3);
+  T("easy tier is untimed", WordHunt._state().timeLeft === 0);
   var g = WordHunt._grid();
   var placedOk = g.words.every(function (e) {
     return e.cells.map(function (id) { return g.cells[id]; }).join("") === e.w;
   });
   T("placed words match their cells", placedOk);
+  T("easy tier has no diagonals",
+    g.words.every(function (e) { return !e.diagonal; }));
   WordHunt.leave();
 
-  /* lineBetween now supports diagonals */
-  T("diagonal line 0->9", JSON.stringify(WordHunt._lineBetween(0, 9)) === "[0,9]");
-  T("diagonal line 0->18", JSON.stringify(WordHunt._lineBetween(0, 18)) === "[0,9,18]");
-  T("non-line rejected", JSON.stringify(WordHunt._lineBetween(0, 11)) === "[]");
+  /* the ladder ramps: tiers span levels, grids change every level */
+  T("12 levels exist", WordHunt.LEVELS.length === 12);
+  T("tiers span the ladder", WordHunt.LEVELS[0].tier === "EASY" &&
+    WordHunt.LEVELS[4].tier === "MEDIUM" && WordHunt.LEVELS[8].tier === "HARD");
+  T("grids change each level", WordHunt.LEVELS.every(function (lv, i, a) {
+    return i === 0 || lv.rows !== a[i - 1].rows || lv.cols !== a[i - 1].cols;
+  }));
+  WordHunt.start(1, 4);                      /* level 5: first MEDIUM */
+  T("medium level is timed", WordHunt._state().timeLeft > 0);
+  WordHunt.leave();
+  WordHunt.start(1, 11);                      /* level 12: last HARD */
+  T("hard level grid is 9x9", document.querySelectorAll("#hunt-grid .hunt-cell").length === 81);
+  WordHunt.leave();
+  T("hard tier adds reverse words", WordHunt.LEVELS[11].rev === true);
+  T("hard hint cadence is gentle", WordHunt.LEVELS[8].hintEvery === 10);
 
-  /* diagonals actually get placed */
+  /* lineBetween supports diagonals on the 7-col medium grid */
+  WordHunt.start(1, 4);
+  T("diagonal line 0->8", JSON.stringify(WordHunt._lineBetween(0, 8)) === "[0,8]");
+  T("diagonal line 0->16", JSON.stringify(WordHunt._lineBetween(0, 16)) === "[0,8,16]");
+  T("non-line rejected", JSON.stringify(WordHunt._lineBetween(0, 9)) === "[]");
+  WordHunt.leave();
+
+  /* diagonals actually get placed on medium levels */
   var anyDiag = false;
   for (var seed = 1; seed <= 25 && !anyDiag; seed++) {
-    WordHunt.start(seed);
+    WordHunt.start(seed, 4);
     if (WordHunt._grid().words.some(function (e) { return e.diagonal; })) anyDiag = true;
     WordHunt.leave();
   }
   T("diagonal words placed", anyDiag);
 
-  /* THREE TIMED MODES: BLITZ 30s, RUSH 60s, CLASSIC 90s */
-  WordHunt.start(1, 0);
-  T("blitz mode is 30s", WordHunt._state().timeLeft === 30);
-  T("blitz still has 6 words", WordHunt._grid().words.length === 6);
-  WordHunt.leave();
-  WordHunt.start(1, 1);
-  T("rush mode is 60s", WordHunt._state().timeLeft === 60);
-  WordHunt.leave();
-
-  WordHunt.start(1, 2);
-  T("classic mode is 90s", WordHunt._state().timeLeft === 90);
-  T("classic hint interval is gentle", WordHunt.MODES[2].hintEvery === 12);
-
-  /* ad boost: random single letters glow */
-  WordHunt.start(1, 2, true);
-  T("boost mode is on", WordHunt._state().hintBoost === true);
+  /* ad hints (rewarded ad, enabled INSIDE the game): letter glows */
+  WordHunt.start(1, 8, true);
+  T("ad hints enabled", WordHunt._state().adHints === true);
   WordHunt._showLetterHint();
   T("letter hint glows exactly one cell",
     document.querySelectorAll(".hunt-cell.letter-hint").length === 1);
   WordHunt.leave();
 
   /* line selection (the drag/tap flow) works end-to-end */
-  WordHunt.start(1, 2);
+  WordHunt.start(1, 8);
   var first = WordHunt._grid().words[0];
   WordHunt._tryLine(first.cells[0], first.cells[first.cells.length - 1]);
   T("line selection finds the word", WordHunt._state().found.length === 1);
@@ -1148,7 +1204,7 @@ function runTests() {
   WordHunt.leave();
 
   /* HINT button (25 coins) still works and glows a cell */
-  WordHunt.start(1, 2);
+  WordHunt.start(1, 8);
   var c0 = save.coins;
   WordHunt.useHint();
   T("hunt hint costs 25 coins", save.coins === c0 - 25);
@@ -1156,6 +1212,22 @@ function runTests() {
     document.querySelectorAll(".hunt-cell.letter-hint").length >= 1);
   WordHunt.leave();
   save.coins = c0; saveNow();   /* restore for later tests */
+
+  /* completing a level unlocks the next + pays + feeds the stats */
+  save.huntLevel = 1; save.huntDone = {}; save.huntWords = 0; save.coins = 100;
+  WordHunt.start(1, 0);
+  var words0 = WordHunt._grid().words;
+  words0.forEach(function (e) {
+    WordHunt._tryLine(e.cells[0], e.cells[e.cells.length - 1]);
+  });
+  T("level 1 completes", save.huntDone[0] === true);
+  T("level 2 unlocked", save.huntLevel === 2);
+  T("first completion pays 25 coins", save.coins === 125);
+  T("words-found stat counts", save.huntWords === words0.length);
+  T("next-level button offered",
+    !!document.getElementById("hunt-next"));
+  closeOverlay();
+  WordHunt.leave();
 
   /* WORD OF THE DAY rotates correctly by calendar day */
   var wa = window.WOTD_get(new Date(2026, 0, 1));
@@ -1189,7 +1261,7 @@ function runDataTests() {
 
   /* don't persist verification runs */
   saveNow = function () { };
-  save = { coins: 1000, sound: false, stars: {}, bestEndless: 0, seenTutorial: true };
+  save = freshSave(1000, false);
 
   function tapCorrect() {
     var need = G.chain[G.nextIdx];
@@ -1290,13 +1362,24 @@ document.addEventListener("DOMContentLoaded", function () {
   $("#duel-again").addEventListener("click", function () { adBreak(WordDuel.again); });
   $("#duel-home").addEventListener("click", function () { WordDuel.leave(); adBreak(renderHome); });
 
-  /* --- Word Hunt (mode picker -> easy / classic) --- */
+  /* --- Word Hunt (12-level ladder: easy → medium → hard) --- */
   $("#btn-hunt").addEventListener("click", function () {
     window.CRWAudio.click();
-    openHuntModePicker();
+    openHuntLevelPicker();
   });
   $("#hunt-back").addEventListener("click", function () { WordHunt.leave(); renderHome(); });
   $("#btn-hunt-hint").addEventListener("click", function () { WordHunt.useHint(); });
+  /* ✨ in-game rewarded ad -> letter hints for the rest of this level */
+  $("#btn-hunt-adhints").addEventListener("click", function () {
+    if (!WordHunt.active() || WordHunt._state().adHints) return;
+    requestAd(function (ok) {
+      if (!WordHunt.active()) return;      /* player left meanwhile */
+      if (ok) {
+        WordHunt.enableAdHints();
+        toast("Letters will glow to help you ✨");
+      }
+    });
+  });
   WordHunt.wire();
 
   /* --- rewarded ads --- */

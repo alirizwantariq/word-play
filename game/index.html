@@ -53,7 +53,7 @@
           <span class="game-ico">👥</span> WORD DUEL <span class="btn-sub">2–4 players · guess the word</span>
         </button>
         <button id="btn-hunt" class="btn secondary">
-          <span class="game-ico">🔎</span> WORD HUNT <span class="btn-sub">find hidden words · 90s</span>
+          <span class="game-ico">🔎</span> WORD HUNT <span class="btn-sub">find hidden words · 12 levels, easy → hard</span>
         </button>
         <div class="home-mini">
           <button id="btn-levels" class="btn ghost">☰ PACKS</button>
@@ -196,10 +196,15 @@
       </header>
       <div class="game-status">
         <div class="ov-text small" style="flex:1">Swipe to find words →</div>
-        <button id="btn-hunt-hint" class="btn hint" style="padding:9px 12px;font-size:12.5px">
+        <span id="hunt-score" class="stat-chip score">0 pts</span>
+      </div>
+      <div class="hunt-actions">
+        <button id="btn-hunt-hint" class="btn hint">
           <span class="bulb"></span> HINT · 25
         </button>
-        <span id="hunt-score" class="stat-chip score">0 pts</span>
+        <button id="btn-hunt-adhints" class="btn hint ad">
+          <span class="bulb"></span> HINTS · WATCH AD
+        </button>
       </div>
       <div id="hunt-grid" class="hunt-grid"></div>
       <div id="hunt-cancelbar" class="cancelbar"></div>
